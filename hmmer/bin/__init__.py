@@ -17,17 +17,3 @@ hmmfetch = _bin / f"hmmfetch_{_suffix}"
 hmmpress = _bin / f"hmmpress_{_suffix}"
 hmmscan = _bin / f"hmmscan_{_suffix}"
 hmmsearch = _bin / f"hmmsearch_{_suffix}"
-
-
-def _make_executable(filepath: _Path):
-    import os
-    import stat
-
-    st = os.stat(filepath)
-    os.chmod(filepath, st.st_mode | stat.S_IEXEC)
-
-
-_make_executable(hmmfetch)
-_make_executable(hmmpress)
-_make_executable(hmmscan)
-_make_executable(hmmsearch)

@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import IO, Iterator, NamedTuple, Union
 
-from .misc import decomment
+from ._misc import decomment
 
 __all__ = [
     "DomTBLCoord",

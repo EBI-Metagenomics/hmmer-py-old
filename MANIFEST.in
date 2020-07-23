@@ -3,7 +3,9 @@ include README.md
 include hmmer/bin/hmmfetch_macosx_10_9_x86_64
 include hmmer/bin/hmmfetch_manylinux2010_x86_64
 include hmmer/bin/hmmpress_macosx_10_9_x86_64
+include hmmer/bin/hmmpress_manylinux2010_x86_64
 include hmmer/bin/hmmscan_macosx_10_9_x86_64
+include hmmer/bin/hmmscan_manylinux2010_x86_64
 include hmmer/bin/hmmsearch_macosx_10_9_x86_64
 include hmmer/bin/hmmsearch_manylinux2010_x86_64
 include version.py

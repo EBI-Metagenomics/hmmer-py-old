@@ -1,6 +1,8 @@
-import pytest
 from io import StringIO
-from hmmer import read_tbl, read_domtbl
+
+import pytest
+
+from hmmer import read_domtbl, read_tbl
 
 _tbl_content = """#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
 # target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target

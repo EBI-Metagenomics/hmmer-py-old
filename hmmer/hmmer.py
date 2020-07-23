@@ -1,12 +1,12 @@
-from typing import Union, Optional
-from subprocess import check_call, check_output
 from enum import Enum
 from pathlib import Path
+from subprocess import check_call, check_output
+from typing import Optional, Union
 
-from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch
-from .tbl import TBLData
-from .domtbl import DomTBLData
 from ._misc import make_path
+from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch
+from .domtbl import DomTBLData
+from .tbl import TBLData
 
 __all__ = ["HMMER", "Result"]
 

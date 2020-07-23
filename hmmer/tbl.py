@@ -1,24 +1,10 @@
-from __future__ import annotations
-
+import csv
 from pathlib import Path
-from typing import IO, Iterator, NamedTuple, Union
+from typing import IO, List, NamedTuple, Union
 
 from ._misc import decomment
 
-__all__ = ["TBLScore", "TBLRow", "TBLData", "TBLIndex", "TBLDom"]
-
-
-def read_tbl(file: Union[str, Path, IO[str]]) -> TBLData:
-    """
-    Read tbl file type.
-
-    Parameters
-    ----------
-    file
-        File path or file stream.
-    """
-    return TBLData(file)
-
+__all__ = ["TBLScore", "TBLRow", "TBLIndex", "TBLDom", "read_tbl"]
 
 TBLIndex = NamedTuple("TBLIndex", [("name", str), ("accession", str)])
 
@@ -51,41 +37,36 @@ TBLRow = NamedTuple(
 )
 
 
-class TBLData:
-    def __init__(self, file: Union[str, Path, IO[str]]):
-        import csv
+def read_tbl(file: Union[str, Path, IO[str]]) -> List[TBLRow]:
+    """
+    Read tbl file type.
 
-        if isinstance(file, str):
-            file = Path(file)
+    Parameters
+    ----------
+    file
+        File path or file stream.
+    """
+    closeit = False
+    if isinstance(file, str):
+        file = Path(file)
 
-        if isinstance(file, Path):
-            file = open(file, "r")
+    if isinstance(file, Path):
+        file = open(file, "r")
+        closeit = True
 
-        self._file = file
-        self._reader = csv.reader(decomment(file), delimiter=" ", skipinitialspace=True)
+    rows = []
+    for line in csv.reader(decomment(file), delimiter=" ", skipinitialspace=True):
+        row = TBLRow(
+            TBLIndex(line[0], line[1]),
+            TBLIndex(line[2], line[3]),
+            TBLScore(*line[4:7]),
+            TBLScore(*line[7:10]),
+            TBLDom(line[10], *[int(i) for i in line[11:18]]),
+            " ".join(line[18:]),
+        )
+        rows.append(row)
 
-    def close(self):
-        """
-        Close the associated stream.
-        """
-        self._file.close()
+    if closeit:
+        file.close()
 
-    def __iter__(self) -> Iterator[TBLRow]:
-        for line in self._reader:
-            yield TBLRow(
-                TBLIndex(line[0], line[1]),
-                TBLIndex(line[2], line[3]),
-                TBLScore(*line[4:7]),
-                TBLScore(*line[7:10]),
-                TBLDom(line[10], *[int(i) for i in line[11:18]]),
-                " ".join(line[18:]),
-            )
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        del exception_type
-        del exception_value
-        del traceback
-        self.close()
+    return rows

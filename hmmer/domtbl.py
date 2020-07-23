@@ -1,31 +1,17 @@
-from __future__ import annotations
-
+import csv
 from pathlib import Path
-from typing import IO, Iterator, NamedTuple, Union
+from typing import IO, List, NamedTuple, Union
 
 from ._misc import decomment
 
 __all__ = [
     "DomTBLCoord",
-    "DomTBLData",
     "DomTBLDomScore",
     "DomTBLIndex",
     "DomTBLRow",
     "DomTBLSeqScore",
+    "read_domtbl",
 ]
-
-
-def read_domtbl(file: Union[str, Path, IO[str]]) -> DomTBLData:
-    """
-    Read domtbl file type.
-
-    Parameters
-    ----------
-    file
-        File path or file stream.
-    """
-    return DomTBLData(file)
-
 
 DomTBLIndex = NamedTuple(
     "DomTBLIndex", [("name", str), ("accession", str), ("length", int)]
@@ -65,44 +51,39 @@ DomTBLRow = NamedTuple(
 )
 
 
-class DomTBLData:
-    def __init__(self, file: Union[str, Path, IO[str]]):
-        import csv
+def read_domtbl(file: Union[str, Path, IO[str]]) -> List[DomTBLRow]:
+    """
+    Read domtbl file type.
 
-        if isinstance(file, str):
-            file = Path(file)
+    Parameters
+    ----------
+    file
+        File path or file stream.
+    """
+    closeit = False
+    if isinstance(file, str):
+        file = Path(file)
 
-        if isinstance(file, Path):
-            file = open(file, "r")
+    if isinstance(file, Path):
+        file = open(file, "r")
+        closeit = True
 
-        self._file = file
-        self._reader = csv.reader(decomment(file), delimiter=" ", skipinitialspace=True)
+    rows = []
+    for line in csv.reader(decomment(file), delimiter=" ", skipinitialspace=True):
+        row = DomTBLRow(
+            DomTBLIndex(line[0], line[1], int(line[2])),
+            DomTBLIndex(line[3], line[4], int(line[5])),
+            DomTBLSeqScore(*line[6:9]),
+            DomTBLDomScore(int(line[9]), int(line[10]), *line[11:15]),
+            DomTBLCoord(int(line[15]), int(line[16])),
+            DomTBLCoord(int(line[17]), int(line[18])),
+            DomTBLCoord(int(line[19]), int(line[20])),
+            line[21],
+            " ".join(line[22:]),
+        )
+        rows.append(row)
 
-    def close(self):
-        """
-        Close the associated stream.
-        """
-        self._file.close()
+    if closeit:
+        file.close()
 
-    def __iter__(self) -> Iterator[DomTBLRow]:
-        for line in self._reader:
-            yield DomTBLRow(
-                DomTBLIndex(line[0], line[1], int(line[2])),
-                DomTBLIndex(line[3], line[4], int(line[5])),
-                DomTBLSeqScore(*line[6:9]),
-                DomTBLDomScore(int(line[9]), int(line[10]), *line[11:15]),
-                DomTBLCoord(int(line[15]), int(line[16])),
-                DomTBLCoord(int(line[17]), int(line[18])),
-                DomTBLCoord(int(line[19]), int(line[20])),
-                line[21],
-                " ".join(line[22:]),
-            )
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exception_type, exception_value, traceback):
-        del exception_type
-        del exception_value
-        del traceback
-        self.close()
+    return rows

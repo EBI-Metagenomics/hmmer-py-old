@@ -1,12 +1,13 @@
+import tempfile
 from enum import Enum
 from pathlib import Path
 from subprocess import check_call, check_output
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from ._misc import make_path
 from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch
-from .domtbl import DomTBLData
-from .tbl import TBLData
+from .domtbl import DomTBLRow, read_domtbl
+from .tbl import TBLRow, read_tbl
 
 __all__ = ["HMMER", "Result"]
 
@@ -22,12 +23,12 @@ class Result:
         if tbl is None:
             self._tbl = None
         else:
-            self._tbl = TBLData(tbl)
+            self._tbl = read_tbl(tbl)
 
         if domtbl is None:
             self._domtbl = None
         else:
-            self._domtbl = DomTBLData(domtbl)
+            self._domtbl = read_domtbl(domtbl)
 
     @property
     def has_tbl(self) -> bool:
@@ -38,14 +39,31 @@ class Result:
         return self._domtbl is not None
 
     @property
-    def tbl(self) -> TBLData:
+    def tbl(self) -> List[TBLRow]:
         assert self._tbl is not None
         return self._tbl
 
     @property
-    def domtbl(self) -> DomTBLData:
+    def domtbl(self) -> List[DomTBLRow]:
         assert self._domtbl is not None
         return self._domtbl
+
+
+def _optional_filepath(
+    filepath_or_bool: Union[Path, str, bool], tmp_filepath: Path
+) -> Optional[Path]:
+
+    if isinstance(filepath_or_bool, str):
+        filepath_or_bool = Path(filepath_or_bool)
+
+    opt_filepath: Optional[Path] = None
+    if isinstance(filepath_or_bool, bool):
+        if filepath_or_bool:
+            opt_filepath = tmp_filepath
+    else:
+        opt_filepath = filepath_or_bool
+
+    return opt_filepath
 
 
 class HMMER:
@@ -85,35 +103,45 @@ class HMMER:
         self,
         target: Union[Path, str],
         output: Optional[Union[Path, str]] = None,
-        tblout: Optional[Union[Path, str]] = None,
-        domtblout: Optional[Union[Path, str]] = None,
+        tblout: Union[Path, str, bool] = True,
+        domtblout: Union[Path, str, bool] = True,
         heuristic=True,
         cut_ga=False,
     ) -> Result:
-        return self._scan_search(
-            hmmscan, target, output, tblout, domtblout, heuristic, cut_ga
-        )
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
+            domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
+
+            return self._match(
+                hmmscan, target, output, tbl_file, domtbl_file, heuristic, cut_ga
+            )
 
     def search(
         self,
         target: Union[Path, str],
         output: Optional[Union[Path, str]] = None,
-        tblout: Optional[Union[Path, str]] = None,
-        domtblout: Optional[Union[Path, str]] = None,
+        tblout: Union[Path, str, bool] = True,
+        domtblout: Union[Path, str, bool] = True,
         heuristic=True,
         cut_ga=False,
     ) -> Result:
-        return self._scan_search(
-            hmmsearch, target, output, tblout, domtblout, heuristic, cut_ga
-        )
 
-    def _scan_search(
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
+            domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
+
+            return self._match(
+                hmmsearch, target, output, tbl_file, domtbl_file, heuristic, cut_ga
+            )
+
+    def _match(
         self,
         bin: Path,
         target: Union[Path, str],
         output: Optional[Union[Path, str]],
-        tblout: Optional[Union[Path, str]],
-        domtblout: Optional[Union[Path, str]],
+        tblout: Optional[Path],
+        domtblout: Optional[Path],
         heuristic: bool,
         cut_ga: bool,
     ) -> Result:

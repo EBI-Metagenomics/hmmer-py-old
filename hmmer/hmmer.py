@@ -1,11 +1,13 @@
+from io import StringIO
 import tempfile
 from enum import Enum
 from pathlib import Path
 from subprocess import PIPE, Popen, check_call, check_output
 from typing import List, Optional, TextIO, Union
+from fasta_reader import FASTAParser, FASTAItem
 
 from ._misc import make_path
-from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch
+from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch, hmmemit
 from .domtbl import DomTBLRow, read_domtbl
 from .tbl import TBLRow, read_tbl
 
@@ -163,6 +165,20 @@ class HMMER:
         p = self._profile
         exts = [".h3f", ".h3i", ".h3m", ".h3p"]
         return all([p.with_suffix(p.suffix + ext).exists() for ext in exts])
+
+    def emit(self, hmmkey: str, nsamples=1, consensus=False, seed=0) -> List[FASTAItem]:
+        options = []
+        if consensus:
+            options.append("-c")
+        if nsamples != 1:
+            options += ["-N", str(nsamples)]
+        if seed != 0:
+            options += ["-seed", str(seed)]
+
+        flags = " ".join(options)
+        cmd = f"{hmmfetch} {self._profile} {hmmkey} | {hmmemit} {flags} -"
+        output = check_output(cmd, shell=True, text=True)
+        return FASTAParser(StringIO(output)).read_items()
 
     def scan(
         self,

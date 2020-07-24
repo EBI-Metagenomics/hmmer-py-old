@@ -1,8 +1,8 @@
 import tempfile
 from enum import Enum
 from pathlib import Path
-from subprocess import check_call, check_output
-from typing import List, Optional, Union
+from subprocess import check_call, check_output, PIPE, Popen
+from typing import List, Optional, Union, TextIO
 
 from ._misc import make_path
 from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch
@@ -66,6 +66,71 @@ def _optional_filepath(
     return opt_filepath
 
 
+class Options:
+    def __init__(
+        self,
+        output: Optional[Union[Path, str]],
+        tblout: Optional[Path],
+        domtblout: Optional[Path],
+        heuristic: bool,
+        cut_ga: bool,
+        hmmkey: Optional[str],
+    ):
+        self._options = []
+
+        if output is not None:
+            self._options += ["-o", str(output)]
+
+        if tblout is not None:
+            self._options += ["--tblout", str(tblout)]
+
+        if domtblout is not None:
+            self._options += ["--domtblout", str(domtblout)]
+
+        if not heuristic:
+            self._options += ["--max"]
+
+        if cut_ga:
+            self._options += ["--cut_ga"]
+
+        self._tblout = tblout
+        self._domtblout = domtblout
+        self._hmmkey = hmmkey
+
+    def aslist(self):
+        return self._options
+
+    @property
+    def tblout(self):
+        return self._tblout
+
+    @property
+    def domtblout(self):
+        return self._domtblout
+
+    @property
+    def has_hmmkey(self) -> bool:
+        return self._hmmkey is not None
+
+    @property
+    def hmmkey(self) -> str:
+        assert isinstance(self._hmmkey, str)
+        return self._hmmkey
+
+
+def make_target(target: Union[Path, str, TextIO], tmpdir: Path) -> Path:
+    if isinstance(target, str):
+        target = Path(target)
+
+    if isinstance(target, Path):
+        return target
+
+    with open(tmpdir / "target.fasta", "w") as file:
+        file.write(target.read())
+
+    return tmpdir / "target.fasta"
+
+
 class HMMER:
     def __init__(self, profile: Union[Path, str]):
         self._profile = make_path(profile).absolute()
@@ -101,74 +166,57 @@ class HMMER:
 
     def scan(
         self,
-        target: Union[Path, str],
+        target: Union[Path, str, TextIO],
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
         heuristic=True,
         cut_ga=False,
+        hmmkey: Optional[str] = None,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            return self._match(
-                hmmscan, target, output, tbl_file, domtbl_file, heuristic, cut_ga
-            )
+            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey)
+            target = make_target(target, Path(tmpdir))
+            return self._match(hmmscan, target, opts)
 
     def search(
         self,
-        target: Union[Path, str],
+        target: Union[Path, str, TextIO],
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
         heuristic=True,
         cut_ga=False,
+        hmmkey: Optional[str] = None,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            return self._match(
-                hmmsearch, target, output, tbl_file, domtbl_file, heuristic, cut_ga
-            )
+            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey)
+            target = make_target(target, Path(tmpdir))
+            return self._match(hmmsearch, target, opts)
 
-    def _match(
-        self,
-        bin: Path,
-        target: Union[Path, str],
-        output: Optional[Union[Path, str]],
-        tblout: Optional[Path],
-        domtblout: Optional[Path],
-        heuristic: bool,
-        cut_ga: bool,
-    ) -> Result:
-        target = make_path(target).absolute()
-        options = []
+    def _match(self, bin: Path, target: Path, options: Options) -> Result:
+        target = target.absolute()
 
-        if output is not None:
-            options += ["-o", str(output)]
+        cmd_match = [str(bin)] + options.aslist()
 
-        if tblout is not None:
-            options += ["--tblout", str(tblout)]
+        if options.has_hmmkey:
 
-        if domtblout is not None:
-            options += ["--domtblout", str(domtblout)]
+            cmd_fetch = [str(hmmfetch), str(self._profile), options.hmmkey]
+            with Popen(cmd_fetch, stdout=PIPE) as pfetch:
+                cmd_match += ["-", str(target)]
+                with Popen(cmd_match, stdin=pfetch.stdout) as pmatch:
+                    pmatch.wait(timeout=15)
 
-        if not heuristic:
-            options += ["--max"]
+        else:
+            cmd_match += [str(self._profile), str(target)]
+            check_call(cmd_match)
 
-        if cut_ga:
-            options += ["--cut_ga"]
-
-        check_call([str(bin)] + options + [str(self._profile), str(target)])
-
-        if tblout is not None:
-            tblout = make_path(tblout)
-
-        if domtblout is not None:
-            domtblout = make_path(domtblout)
-
-        return Result(tblout, domtblout)
+        return Result(options.tblout, options.domtblout)

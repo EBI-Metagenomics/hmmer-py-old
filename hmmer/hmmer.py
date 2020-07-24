@@ -1,8 +1,8 @@
 import tempfile
 from enum import Enum
 from pathlib import Path
-from subprocess import check_call, check_output, PIPE, Popen
-from typing import List, Optional, Union, TextIO
+from subprocess import PIPE, Popen, check_call, check_output
+from typing import List, Optional, TextIO, Union
 
 from ._misc import make_path
 from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch

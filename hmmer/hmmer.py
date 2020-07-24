@@ -1,13 +1,14 @@
-from io import StringIO
 import tempfile
 from enum import Enum
+from io import StringIO
 from pathlib import Path
 from subprocess import PIPE, Popen, check_call, check_output
 from typing import List, Optional, TextIO, Union
-from fasta_reader import FASTAParser, FASTAItem
+
+from fasta_reader import FASTAItem, FASTAParser
 
 from ._misc import make_path
-from .bin import hmmfetch, hmmpress, hmmscan, hmmsearch, hmmemit
+from .bin import hmmemit, hmmfetch, hmmpress, hmmscan, hmmsearch
 from .domtbl import DomTBLRow, read_domtbl
 from .tbl import TBLRow, read_tbl
 

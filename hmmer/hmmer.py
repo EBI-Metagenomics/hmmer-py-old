@@ -138,6 +138,15 @@ class HMMER:
     def __init__(self, profile: Union[Path, str]):
         self._profile = make_path(profile).absolute()
         self._indexed = State.UNKNOWN
+        self._timeout = 15
+
+    @property
+    def timeout(self) -> int:
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout: int):
+        self._timeout = timeout
 
     def index(self):
         check_call([str(hmmfetch), "--index", self._profile])
@@ -230,7 +239,7 @@ class HMMER:
             with Popen(cmd_fetch, stdout=PIPE) as pfetch:
                 cmd_match += ["-", str(target)]
                 with Popen(cmd_match, stdin=pfetch.stdout) as pmatch:
-                    pmatch.wait(timeout=15)
+                    pmatch.wait(timeout=self._timeout)
 
         else:
             cmd_match += [str(self._profile), str(target)]

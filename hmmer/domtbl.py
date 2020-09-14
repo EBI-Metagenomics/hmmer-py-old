@@ -1,6 +1,7 @@
 import csv
+from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, List, NamedTuple, Union
+from typing import IO, List, Union
 
 from ._misc import decomment
 
@@ -13,42 +14,48 @@ __all__ = [
     "read_domtbl",
 ]
 
-DomTBLIndex = NamedTuple(
-    "DomTBLIndex", [("name", str), ("accession", str), ("length", int)]
-)
 
-DomTBLSeqScore = NamedTuple(
-    "DomTBLSeqScore", [("e_value", str), ("score", str), ("bias", str)]
-)
+@dataclass
+class DomTBLIndex:
+    name: str
+    accession: str
+    length: int
 
-DomTBLDomScore = NamedTuple(
-    "DomTBLDomScore",
-    [
-        ("id", int),
-        ("size", int),
-        ("c_value", str),
-        ("i_value", str),
-        ("score", str),
-        ("bias", str),
-    ],
-)
 
-DomTBLCoord = NamedTuple("DomTBLCoord", [("start", int), ("stop", int)])
+@dataclass
+class DomTBLSeqScore:
+    e_value: str
+    score: str
+    bias: str
 
-DomTBLRow = NamedTuple(
-    "DomTBLRow",
-    [
-        ("target", DomTBLIndex),
-        ("query", DomTBLIndex),
-        ("full_sequence", DomTBLSeqScore),
-        ("domain", DomTBLDomScore),
-        ("hmm_coord", DomTBLCoord),
-        ("ali_coord", DomTBLCoord),
-        ("env_coord", DomTBLCoord),
-        ("acc", str),
-        ("description", str),
-    ],
-)
+
+@dataclass
+class DomTBLDomScore:
+    id: int
+    size: int
+    c_value: str
+    i_value: str
+    score: str
+    bias: str
+
+
+@dataclass
+class DomTBLCoord:
+    start: int
+    stop: int
+
+
+@dataclass
+class DomTBLRow:
+    target: DomTBLIndex
+    query: DomTBLIndex
+    full_sequence: DomTBLSeqScore
+    domain: DomTBLDomScore
+    hmm_coord: DomTBLCoord
+    ali_coord: DomTBLCoord
+    env_coord: DomTBLCoord
+    acc: str
+    description: str
 
 
 def read_domtbl(file: Union[str, Path, IO[str]]) -> List[DomTBLRow]:

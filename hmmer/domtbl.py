@@ -1,4 +1,5 @@
 import csv
+import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, List, Union
@@ -56,6 +57,15 @@ class DomTBLRow:
     env_coord: DomTBLCoord
     acc: str
     description: str
+
+    def _asdict(self):
+        return dataclasses.asdict(self)
+
+    def __iter__(self):
+        return iter(self._asdict().values())
+
+    def _field_types(self):
+        return {f.name: f.type for f in dataclasses.fields(self)}
 
 
 def read_domtbl(file: Union[str, Path, IO[str]]) -> List[DomTBLRow]:

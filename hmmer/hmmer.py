@@ -78,6 +78,7 @@ class Options:
         heuristic: bool,
         cut_ga: bool,
         hmmkey: Optional[str],
+        Z: Optional[int],
     ):
         self._options = []
 
@@ -95,6 +96,9 @@ class Options:
 
         if cut_ga:
             self._options += ["--cut_ga"]
+
+        if Z:
+            self._options += ["-Z", str(Z)]
 
         self._tblout = tblout
         self._domtblout = domtblout
@@ -199,13 +203,14 @@ class HMMER:
         heuristic=True,
         cut_ga=False,
         hmmkey: Optional[str] = None,
+        Z: Optional[int] = None,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey)
+            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
             target = make_target(target, Path(tmpdir))
             return self._match(hmmscan, target, opts)
 
@@ -218,13 +223,14 @@ class HMMER:
         heuristic=True,
         cut_ga=False,
         hmmkey: Optional[str] = None,
+        Z: Optional[int] = None,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey)
+            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
             target = make_target(target, Path(tmpdir))
             return self._match(hmmsearch, target, opts)
 

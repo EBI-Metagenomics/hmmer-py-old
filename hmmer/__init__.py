@@ -1,6 +1,8 @@
 from importlib import import_module as _import_module
 
 from . import typing
+from ._env import HMMER_CACHE_HOME
+from ._example import example_filepath
 from ._testit import test
 from .domtbl import read_domtbl
 from .hmmer import HMMER
@@ -11,4 +13,13 @@ try:
 except ModuleNotFoundError:
     __version__ = "x.x.x"
 
-__all__ = ["__version__", "test", "read_domtbl", "read_tbl", "HMMER", "typing"]
+__all__ = [
+    "HMMER",
+    "HMMER_CACHE_HOME",
+    "__version__",
+    "example_filepath",
+    "read_domtbl",
+    "read_tbl",
+    "test",
+    "typing",
+]

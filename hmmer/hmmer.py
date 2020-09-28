@@ -174,6 +174,16 @@ class HMMER:
     def press(self):
         check_call([hmmpress, self._profile])
 
+    def fetch(self, profile_accs: List[str]) -> str:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            keyfile = Path(tmpdir) / "keyfile"
+            with open(keyfile, "w") as file:
+                for acc in profile_accs:
+                    file.write(f"{acc}\n")
+
+            cmd = f"{hmmfetch} -f {self._profile} {keyfile}"
+            return check_output(cmd, shell=True, text=True)
+
     @property
     def is_pressed(self) -> bool:
         p = self._profile

@@ -44,6 +44,8 @@ ACT                  PF01842.26    67 AE014075.1:985-3507|amino|11 -            
 # [ok]
 """
 
+_domtbl_empty_content = ""
+
 
 def test_tbl():
     tbl = iter(read_tbl(StringIO(_tbl_content)))
@@ -127,3 +129,9 @@ def test_domtbl():
     assert row.target.name == "Y1_Tnp"
 
     assert len(list(read_domtbl(StringIO(_domtbl_content)))) == 8
+
+
+def test_domtbl_empty():
+    tbl = iter(read_domtbl(StringIO(_domtbl_empty_content)))
+    with pytest.raises(StopIteration):
+        next(tbl)

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["pytest-runner>=5.2", "setuptools>=47.1.1", "setuptools_scm[toml]>=4.1.2", "wheel>=0.34.2"]
+requires = ["setuptools>=47.1.1", "setuptools_scm[toml]>=4.1.2", "wheel>=0.34.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]

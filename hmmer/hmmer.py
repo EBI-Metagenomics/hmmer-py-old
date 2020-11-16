@@ -5,7 +5,7 @@ from pathlib import Path
 from subprocess import PIPE, Popen, check_call, check_output
 from typing import List, Optional, TextIO, Union
 
-from fasta_reader import FASTAItem, FASTAParser
+from fasta_reader import FASTAItem, read_fasta
 
 from ._misc import make_path
 from .bin import hmmemit, hmmfetch, hmmpress, hmmscan, hmmsearch
@@ -202,7 +202,7 @@ class HMMER:
         flags = " ".join(options)
         cmd = f"{hmmfetch} {self._profile} {hmmkey} | {hmmemit} {flags} -"
         output = check_output(cmd, shell=True, text=True)
-        return FASTAParser(StringIO(output)).read_items()
+        return read_fasta(StringIO(output)).read_items()
 
     def scan(
         self,

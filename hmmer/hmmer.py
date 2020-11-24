@@ -169,7 +169,10 @@ class HMMER:
         return self._indexed == State.YES
 
     def fetch_profile(self, key: str) -> str:
-        return check_output([str(hmmfetch), str(self._profile), key], text=True)
+        output = check_output([str(hmmfetch), str(self._profile), key], text=True)
+        if output[-1] == "\n":
+            output = output[:-1]
+        return output
 
     def press(self):
         check_call([hmmpress, self._profile])
@@ -182,7 +185,10 @@ class HMMER:
                     file.write(f"{acc}\n")
 
             cmd = f"{hmmfetch} -f {self._profile} {keyfile}"
-            return check_output(cmd, shell=True, text=True)
+            output = check_output(cmd, shell=True, text=True)
+            if output[-1] == "\n":
+                output = output[:-1]
+            return output
 
     @property
     def is_pressed(self) -> bool:

@@ -116,12 +116,22 @@ def test_domtbl():
     assert row.domain.i_value == "5.5e-10"
     assert row.domain.score == "38.8"
     assert row.domain.bias == "17.5"
+
     assert row.hmm_coord.start == 1
     assert row.hmm_coord.stop == 22
+    assert row.hmm_coord.interval.start == 0
+    assert row.hmm_coord.interval.end == 22
+
     assert row.ali_coord.start == 1
     assert row.ali_coord.stop == 21
+    assert row.ali_coord.interval.start == 0
+    assert row.ali_coord.interval.end == 21
+
     assert row.env_coord.start == 1
     assert row.env_coord.stop == 21
+    assert row.env_coord.interval.start == 0
+    assert row.env_coord.interval.end == 21
+
     assert row.acc == "0.99"
     assert row.description == "Threonine leader peptide"
 

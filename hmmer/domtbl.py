@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, List, Union
 
+from gff_io.interval import PyInterval, RInterval
+
 from ._misc import decomment
 
 __all__ = [
@@ -42,8 +44,33 @@ class DomTBLDomScore:
 
 @dataclass
 class DomTBLCoord:
+    """
+    Coordinates.
+
+    Parameters
+    ----------
+    start
+        Start coordinate, starting from 1. Consider using :method:`.interval` instead.
+    stop
+        Stop coordinate. `(start, stop)` form a closed interval. Consider using
+        :method:`.interval` instead.
+    """
+
     start: int
     stop: int
+
+    @property
+    def interval(self) -> PyInterval:
+        """
+        0-start, half-open interval.
+
+        Returns
+        -------
+        PyInterval
+            Interval.
+        """
+        rinterval = RInterval(self.start, self.stop)
+        return rinterval.to_pyinterval()
 
 
 @dataclass

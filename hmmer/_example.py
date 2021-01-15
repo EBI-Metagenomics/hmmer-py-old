@@ -11,7 +11,7 @@ goodboy = pooch.create(
     path=pooch.os_cache("hmmer"),
     base_url="https://hmmer-py.s3.eu-west-2.amazonaws.com/",
     registry={
-        "Pfam-A_24.hmm.gz": "32791a1b50837cbe1fca1376a3e1c45bc84b32dd4fe28c92fd276f3f2c3a15e3",
+        "Pfam-A_24.hmm.gz": "32791a1b50837cbe1fca1376a3e1c45bc84b32dd4fe28c92fd276f3f2c3a15e3"
     },
 )
 

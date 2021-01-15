@@ -53,7 +53,7 @@ class Result:
 
 
 def _optional_filepath(
-        filepath_or_bool: Union[Path, str, bool], tmp_filepath: Path
+    filepath_or_bool: Union[Path, str, bool], tmp_filepath: Path
 ) -> Optional[Path]:
     if isinstance(filepath_or_bool, str):
         filepath_or_bool = Path(filepath_or_bool)
@@ -291,15 +291,15 @@ class seq_db:
         return Result(options.tblout, options.domtblout)
 
     def phmmer(
-            self,
-            target: Union[Path, str, TextIO],
-            output: Optional[Union[Path, str]] = None,
-            tblout: Union[Path, str, bool] = True,
-            domtblout: Union[Path, str, bool] = True,
-            heuristic=True,
-            cut_ga=False,
-            hmmkey: Optional[str] = None,
-            Z: Optional[int] = None,
+        self,
+        target: Union[Path, str, TextIO],
+        output: Optional[Union[Path, str]] = None,
+        tblout: Union[Path, str, bool] = True,
+        domtblout: Union[Path, str, bool] = True,
+        heuristic=True,
+        cut_ga=False,
+        hmmkey: Optional[str] = None,
+        Z: Optional[int] = None,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:

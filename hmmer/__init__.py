@@ -4,7 +4,7 @@ from . import typing
 from ._example import example_filepath
 from ._testit import test
 from .domtbl import read_domtbl
-from .hmmer import HMMER, seq_db
+from .hmmer import HMMER, SeqDB
 from .tbl import read_tbl
 
 try:
@@ -14,7 +14,7 @@ except ModuleNotFoundError:
 
 __all__ = [
     "HMMER",
-    "seq_db",
+    "SeqDB",
     "__version__",
     "example_filepath",
     "read_domtbl",

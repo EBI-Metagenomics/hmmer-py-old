@@ -12,7 +12,7 @@ from .bin import hmmemit, hmmfetch, hmmpress, hmmscan, hmmsearch, phmmer
 from .domtbl import DomTBLRow, read_domtbl
 from .tbl import TBLRow, read_tbl
 
-__all__ = ["HMMER", "Result", "seq_db"]
+__all__ = ["HMMER", "Result", "SeqDB"]
 
 
 class State(Enum):
@@ -269,7 +269,7 @@ class HMMER:
         return Result(options.tblout, options.domtblout)
 
 
-class seq_db:
+class SeqDB:
     def __init__(self, db: Union[Path, str]):
         self.sequences = make_path(db).absolute()
         self._timeout = 15

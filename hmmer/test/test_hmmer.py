@@ -9,4 +9,4 @@ def test_fetch():
     profiles = hmm.fetch(["PF01797.17", "PF03447.17"])
 
     hex = hashlib.sha256(profiles.encode()).hexdigest()
-    assert hex == "ed84c32ad2714564960bf7393edd1d2e2937c1451a89d04d83760a6fb7eda833"
+    assert hex == "1d869020a903c80da47eec0464b91b3e48aa095996e2f0df44e41e9e0e7bd6aa"

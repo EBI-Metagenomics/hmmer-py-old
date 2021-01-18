@@ -1,7 +1,17 @@
 from pathlib import Path as _Path
 from sys import platform as _platform
 
-__all__ = ["hmmfetch", "hmmpress", "hmmscan", "hmmsearch", "hmmemit", "phmmer"]
+__all__ = [
+    "hmmfetch",
+    "hmmpress",
+    "hmmscan",
+    "hmmsearch",
+    "hmmemit",
+    "phmmer",
+    "binary_version",
+]
+
+binary_version = "3.3.2"
 
 if _platform not in ["linux", "darwin"]:
     raise RuntimeError(f"Unsupported platform: {_platform}.")
@@ -11,7 +21,7 @@ if _platform == "darwin":
     _suffix = "macosx_10_9_x86_64"
 
 
-_bin = _Path(__file__).parent.absolute()
+_bin = _Path(__file__).parent.absolute() / f"v{binary_version}"
 
 hmmemit = _bin / f"hmmemit_{_suffix}"
 hmmfetch = _bin / f"hmmfetch_{_suffix}"

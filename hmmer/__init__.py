@@ -3,6 +3,7 @@ from importlib import import_module as _import_module
 from . import typing
 from ._example import example_filepath
 from ._testit import test
+from .bin import binary_version
 from .domtbl import read_domtbl
 from .hmmer import HMMER, SeqDB
 from .tbl import read_tbl
@@ -17,6 +18,7 @@ __all__ = [
     "SeqDB",
     "__version__",
     "example_filepath",
+    "binary_version",
     "read_domtbl",
     "read_tbl",
     "test",

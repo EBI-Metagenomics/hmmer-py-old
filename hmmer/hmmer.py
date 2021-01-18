@@ -8,11 +8,11 @@ from typing import List, Optional, TextIO, Union
 from fasta_reader import FASTAItem, read_fasta
 
 from ._misc import make_path
-from .bin import hmmemit, hmmfetch, hmmpress, hmmscan, hmmsearch
+from .bin import hmmemit, hmmfetch, hmmpress, hmmscan, hmmsearch, phmmer
 from .domtbl import DomTBLRow, read_domtbl
 from .tbl import TBLRow, read_tbl
 
-__all__ = ["HMMER", "Result"]
+__all__ = ["HMMER", "Result", "SeqDB"]
 
 
 class State(Enum):
@@ -55,7 +55,6 @@ class Result:
 def _optional_filepath(
     filepath_or_bool: Union[Path, str, bool], tmp_filepath: Path
 ) -> Optional[Path]:
-
     if isinstance(filepath_or_bool, str):
         filepath_or_bool = Path(filepath_or_bool)
 
@@ -268,3 +267,45 @@ class HMMER:
             check_call(cmd_match)
 
         return Result(options.tblout, options.domtblout)
+
+
+class SeqDB:
+    def __init__(self, db: Union[Path, str]):
+        self.sequences = make_path(db).absolute()
+        self._timeout = 15
+
+    @property
+    def timeout(self) -> int:
+        return self._timeout
+
+    @timeout.setter
+    def timeout(self, timeout: int):
+        self._timeout = timeout
+
+    def _match(self, bin: Path, target: Path, options: Options) -> Result:
+        target = target.absolute()
+        sequence_db = self.sequences
+        cmd_match = [str(bin)] + options.aslist() + [str(target), str(sequence_db)]
+        check_call(cmd_match)
+
+        return Result(options.tblout, options.domtblout)
+
+    def phmmer(
+        self,
+        target: Union[Path, str, TextIO],
+        output: Optional[Union[Path, str]] = None,
+        tblout: Union[Path, str, bool] = True,
+        domtblout: Union[Path, str, bool] = True,
+        heuristic=True,
+        cut_ga=False,
+        hmmkey: Optional[str] = None,
+        Z: Optional[int] = None,
+    ) -> Result:
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
+            domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
+
+            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
+            target = make_target(target, Path(tmpdir))
+            return self._match(phmmer, target, opts)

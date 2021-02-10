@@ -72,12 +72,14 @@ class Options:
     def __init__(
         self,
         output: Optional[Union[Path, str]],
-        tblout: Optional[Path],
-        domtblout: Optional[Path],
-        heuristic: bool,
-        cut_ga: bool,
-        hmmkey: Optional[str],
-        Z: Optional[int],
+        tblout: Optional[Path] = None,
+        domtblout: Optional[Path] = None,
+        heuristic: bool = True,
+        cut_ga: bool = False,
+        hmmkey: Optional[str] = None,
+        Z: Optional[int] = None,
+        alignment: Optional[Union[Path, str]] = None,
+        notextw: bool = False,
     ):
         self._options = []
 
@@ -99,9 +101,16 @@ class Options:
         if Z:
             self._options += ["-Z", str(Z)]
 
+        if alignment is not None:
+            self._options += ["-A", str(alignment)]
+
+        if notextw:
+            self._options += ["--notextw"]
+
         self._tblout = tblout
         self._domtblout = domtblout
         self._hmmkey = hmmkey
+        self._alignment = alignment
 
     def aslist(self):
         return self._options
@@ -215,8 +224,8 @@ class HMMER:
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
-        heuristic=True,
-        cut_ga=False,
+        heuristic: bool = True,
+        cut_ga: bool = False,
         hmmkey: Optional[str] = None,
         Z: Optional[int] = None,
     ) -> Result:
@@ -225,7 +234,15 @@ class HMMER:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
+            opts = Options(
+                output,
+                tblout=tbl_file,
+                domtblout=domtbl_file,
+                heuristic=heuristic,
+                cut_ga=cut_ga,
+                hmmkey=hmmkey,
+                Z=Z,
+            )
             target = make_target(target, Path(tmpdir))
             return self._match(hmmscan, target, opts)
 
@@ -235,8 +252,8 @@ class HMMER:
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
-        heuristic=True,
-        cut_ga=False,
+        heuristic: bool = True,
+        cut_ga: bool = False,
         hmmkey: Optional[str] = None,
         Z: Optional[int] = None,
     ) -> Result:
@@ -245,7 +262,15 @@ class HMMER:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
 
-            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
+            opts = Options(
+                output,
+                tblout=tbl_file,
+                domtblout=domtbl_file,
+                heuristic=heuristic,
+                cut_ga=cut_ga,
+                hmmkey=hmmkey,
+                Z=Z,
+            )
             target = make_target(target, Path(tmpdir))
             return self._match(hmmsearch, target, opts)
 
@@ -296,16 +321,27 @@ class SeqDB:
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
-        heuristic=True,
-        cut_ga=False,
-        hmmkey: Optional[str] = None,
+        heuristic: bool = True,
         Z: Optional[int] = None,
+        alignment: Optional[Union[Path, str]] = None,
+        notextw: bool = False,
     ) -> Result:
 
         with tempfile.TemporaryDirectory() as tmpdir:
             tbl_file = _optional_filepath(tblout, Path(tmpdir) / "tbl.txt")
             domtbl_file = _optional_filepath(domtblout, Path(tmpdir) / "domtbl.txt")
+            alignment_file = _optional_filepath(
+                alignment, Path(tmpdir) / "alignment.sto"
+            )
 
-            opts = Options(output, tbl_file, domtbl_file, heuristic, cut_ga, hmmkey, Z)
+            opts = Options(
+                output,
+                tblout=tbl_file,
+                domtblout=domtbl_file,
+                heuristic=heuristic,
+                notextw=notextw,
+                alignment=alignment_file,
+                Z=Z,
+            )
             target = make_target(target, Path(tmpdir))
             return self._match(phmmer, target, opts)

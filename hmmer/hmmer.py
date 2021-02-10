@@ -74,7 +74,7 @@ class Options:
         output: Optional[Union[Path, str]],
         tblout: Optional[Path] = None,
         domtblout: Optional[Path] = None,
-        heuristic: bool = False,
+        heuristic: bool = True,
         cut_ga: bool = False,
         hmmkey: Optional[str] = None,
         Z: Optional[int] = None,
@@ -92,7 +92,7 @@ class Options:
         if domtblout is not None:
             self._options += ["--domtblout", str(domtblout)]
 
-        if heuristic:
+        if not heuristic:
             self._options += ["--max"]
 
         if cut_ga:
@@ -321,7 +321,7 @@ class SeqDB:
         output: Optional[Union[Path, str]] = None,
         tblout: Union[Path, str, bool] = True,
         domtblout: Union[Path, str, bool] = True,
-        heuristic: bool = False,
+        heuristic: bool = True,
         Z: Optional[int] = None,
         alignment: Optional[Union[Path, str]] = None,
         notextw: bool = False,
